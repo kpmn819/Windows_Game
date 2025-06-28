@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# attempt to do a generic game format with classes
+
 
 # IMPORTS START --------------------------------------------------
 # makes extensive use of pygame to blit the screen
@@ -8,9 +8,9 @@
 from random import randrange, shuffle, random, sample
 
 # pull stuff from config file
+
 from config import white, black, green, red, blue
-from config import game_names, game_types, nt_path, pi_path
-from config import small_prize, big_prize, web_server, lists_path
+from config import game_names, game_types, nt_path, lists_path
 import db_module
 use_db = True
 from datetime import datetime
@@ -25,11 +25,7 @@ import multiprocessing
 
 
 from pygame.locals import *
-if os.name == 'nt':
-    pass
-else:
-    import RPi.GPIO as GPIO
-    GPIO.setmode(GPIO.BCM)
+
     
 import pygame.font
 import os
@@ -106,32 +102,7 @@ class PictGame():
         
             
 
-# ----------- Buttons ---------------
-class Button():
-    def __init__(self, in_port, in_stat, out_port, out_stat):
-        self.in_port = in_port
-        self.in_stat = in_stat
-        self.out_port = out_port
-        self.out_stat = out_stat
-    def setup_port(self):
-        #initialize ports
-        GPIO.setup(self.out_port, GPIO.OUT)
-        GPIO.setup(self.in_port, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-    def read_status(self):
-        # read the input port here
-        if GPIO.input(self.in_port) == GPIO.LOW:
-            self.in_stat = False
-            return self
-        else:
-            self.in_stat = True
-            return self
-    def set_status(self):
-        # set the output port here
-        if self.out_stat == True:
-            GPIO.output(self.out_port, True)
-        else:
-            GPIO.output(self.out_port, False)
-        return self
+
     
 # !!!!!!!!!!!!!
 class ScreenObject():
@@ -160,7 +131,7 @@ class TextObject(ScreenObject):
         # this handy util breaks up long lines for us
 
         lines_list = textwrap.wrap(self.text, self.width)        
-	# will return any number of lines of final_length
+    # will return any number of lines of final_length
         return lines_list 
     #----------- font process
     def font_process(self):
@@ -214,20 +185,7 @@ def init():
     global big_index
     big_index = 0
     # button(in port, in stat, out port, out stat)
-    if os.name == 'nt':
-        pass
-    else:
-        # Initialize i/o ports and flash lights
-        light_list = [0] * 7
-        buttons_lights(light_list, 0, 0)
-        light_list = [1] * 7
-        buttons_lights(light_list, 1, 0)
-        sleep(1)
-        light_list = [0] * 7
-        buttons_lights(light_list, 1, 0)
-        # Start the web server if on the pi
-        process = multiprocessing.Process(target = task)
-        process.start()
+
 
 
 
@@ -293,191 +251,98 @@ def init():
     wrong = get_file('wrong_resp.csv', 1)[0]
 #\\\\\\\\\\\\\\\\\\\ INITIALIZE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-# /////////////////// START UTILITY METHODS ////////////////////////
-def task():
-    # Used to start web server
-    try:
-        print('Attempting to start server')
-        os.system(web_server)
-    except:
-        print('could not start server')
 
+# Modern CSV reader utility: skips header, returns list of lists with up to col_count columns
 def get_file(list_file, col_count):
-    # now a more generic reader that can take any number of columns
-    if os.name == 'nt':
-        pass
-    else:
-        list_file = lists_path + list_file
-    global row_count
-    global file_error
+    list_file = lists_path + list_file
     try:
-        ''' call with file and get back list of lists'''
-        with open(list_file) as csv_file:
+        with open(list_file, newline='', encoding='utf-8') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
-            rowlist = []
             cvs_list = []
-            line_count = 0
-            for row in csv_reader:
-                if line_count > 0:
-                    # avoids the header line
-                    rowlist = [row[0]] # initalizes the list first item
-                    if col_count > 1:
-                        for x in range(1,col_count):
-                            rowlist.append(row[x])
-                        
-                    cvs_list.append(rowlist)
-                    # this is a 0 based list of lists
-                    # access questions_list[q# - 1][column]
-                line_count += 1
-            row_count = line_count - 1
-            # returns lists within lists acces via [list of items][items]
+            for i, row in enumerate(csv_reader):
+                if i == 0:
+                    continue  # skip header
+                rowlist = row[:col_count]
+                cvs_list.append(rowlist)
             return [cvs_list]
     except FileNotFoundError:
-        print('file not found')
-        # print message on screen
-        file_error = True
+        print(f'File not found: {list_file}')
+        return [[]]
         
-def light_proc(light_list):
-    if os.name == 'nt':
-        pass
-    else:
-        buttons_lights(light_list,1,0)
 
-def btn_proc(btn_list):
-    if os.name == 'nt':
-        resp = key_press(btn_list)
-        return resp
-    else:
-        buttons = buttons_lights(btn_list, 0, 1)
-        for i, button in enumerate(buttons):
-            # exit from anywhere if you hold down mouse and press button
 
-            if not button.in_stat:
-                # reset for the next time
-                button.in_stat = True
-                return i
+
+
+def btn_proc(_):
+    # Use mouse input for all user interactions
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                # For game selection: left (1), right (5), center (3)
+                if y > 350 and y < 900:
+                    if x < 800:
+                        return 1  # left
+                    elif x > 1200:
+                        return 5  # right
+                    else:
+                        return 3  # center (if used)
+                # For answer selection: 3 or 5 answers horizontally
+                if y > 500 and y < 800:
+                    if x < 500:
+                        return 1
+                    elif x < 1100:
+                        return 2
+                    elif x < 1700:
+                        return 3
+                    elif x < 2300:
+                        return 4
+                    else:
+                        return 5
  
                 
             
 
 
-def buttons_lights(light_list, lgt_set, btn_mon):
-    # 0, 0 initializes the ports
-    if not lgt_set and not btn_mon:
-        #             in, in stat, out, out stat
-        btn_free = Button(13, True, 16, True)
-        button1 = Button(4, True, 24, True)
-        button2 = Button(17, True, 25, True)
-        button3 = Button(27, True, 12, True)
-        button4 = Button(22, True, 18, True)
-        button5 = Button(5, True, 14, True)
-        btn_pay = Button(26, True, 16, True)
-        button_list = [btn_free, button1, button2, button3, button4,
-                   button5, btn_pay]
-        # this makes it persistant for use below
-        global button_obj
-        button_obj = button_list
-        for i, button in enumerate(button_list):
-            Button.setup_port(button)
-        print('PORTS INITIALIZED')
-
-    if lgt_set:
-        # uses active_list to set outputs
-        for i, button in enumerate(button_obj):
-            if light_list[i]:
-                # set the port False = low light on
-                GPIO.output(button.out_port, True)
-                # call Button to set port gpio
-                button.out_stat = True
-            else:
-                button.out_stat = False
-                GPIO.output(button.out_port, False)
 
 
-    if btn_mon:
-        loop = True
-        count = 0
-        while loop == True:
-            count += 1
-            for i, button in enumerate(button_obj):
-                # special code to shutdown goes here
-                if GPIO.input(13) == GPIO.LOW and GPIO.input(5) == GPIO.LOW:
-                    sleep(3) # Still pressed?
-                    if GPIO.input(13) == GPIO.LOW and GPIO.input(5) == GPIO.LOW:
-                        GPIO.cleanup()
-                        # Shutdown the web server
-                        os.system('sudo fuser -k 8000/tcp')
-                        os.system("sudo shutdown -h now")
-                event = pygame.event.poll()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    print('got the mouse')
-                    GPIO.cleanup()
-                    # Shutdown the web server
-                    os.system('sudo fuser -k 8000/tcp')
-                    sys.exit()
-                # ===== end shutdown code ======
 
-                # only check the flagged ports
-                if light_list[i]:
-                    # go check the physical port if it comes back False
-                    if GPIO.input(button.in_port) == GPIO.LOW:
-                        button.in_stat = False
-                        return button_obj
-                        # loop = False
-                        # set our status and get out
-                        count += 1
-                    sleep(.01)
-                else:
-                    pass
-        # returns button objects to btn_proc to scan
-        return    button_obj
-
-
-def key_press(key_list):
-    # list looks like [0, 1, 1, 1, 1, 1, 0]
-    x = ''
-    loop = True
-    while x == '':
-        # simulate button polling
-        # creating a loop to check events that
-        # are occurring
+    # Wait for mouse click and return the selected index based on click position
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-    
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print('got the mouse')
-                sys.exit()
-            # checking if keydown event happened or not
-            if event.type == pygame.KEYDOWN:
-                
-                # checking if key "A" was pressed
-
-                if event.key == pygame.K_1:
-                    x = 1
-                    
-                if event.key == pygame.K_2:
-                    x = 2
-                    
-                if event.key == pygame.K_3:
-                    x = 3
-                    
-                if event.key == pygame.K_4:
-                    x = 4
-                    
-                if event.key == pygame.K_5:
-                    x = 5
-                
-                if event.key == pygame.K_q:
-                    raise Exception(KeyboardInterrupt)
-            
-                    
-    return x
+                x, y = event.pos
+                # Map x/y to a button index based on UI layout
+                # For game selection: left (1), right (5)
+                if y > 350 and y < 900:
+                    if x < 800:
+                        return 1  # left
+                    elif x > 1200:
+                        return 5  # right
+                    else:
+                        return 3  # center (if used)
+                # For answer selection: 3 or 5 answers horizontally
+                # (500 < y < 800 for answers)
+                if y > 500 and y < 800:
+                    if x < 500:
+                        return 1
+                    elif x < 1100:
+                        return 2
+                    elif x < 1700:
+                        return 3
+                    elif x < 2300:
+                        return 4
+                    else:
+                        return 5
 
 
 # Place arrows and blit
-def place_arrows(style):
     if  '1' in style:
         ScreenObject.blit_scr_obj(arrow1, arrow1.location, blue_arrow)
     if  '2' in style:
@@ -492,7 +357,6 @@ def place_arrows(style):
 # gets a list of intro statements and puts them on screen
 def picture_intro(curr_game):
     button_list = [0,0,0,0,0,0,0]
-    light_proc(button_list)
 
     # put up the game intro
     # splice the name of the game to _intro.csv to load file
@@ -564,46 +428,8 @@ def blit_formatted(file):
 #////////////////// START METHODS /////////////////////////
 
 
-def free_cash():
-    ''' called by both games selects if it is a free game or
-    if they put in some money sets global variables'''
-    button_list = [1, 0, 0, 0, 0, 0, 1]
-    # setup lights
-    light_proc(button_list)
-
-    # display rules and wait for input
-    global free
-    
-    global display
-    free_ch_bkg = make_surface(gpath + 'free_donate.jpg')
-    bakgnd = ScreenObject((0,0))
-    ScreenObject.blit_scr_obj(bakgnd, bakgnd.location, free_ch_bkg)
-    #create the object first can reuse object since blit stores it
-    blit_formatted('free_cash.csv')
-    pygame.display.flip()
-    # Select if this is a paid or free play
-    while True:
-        sleep(.05)
-        selection = btn_proc(button_list)
-        if selection == 0:
-            
-            free = True
-        else:
-            SoundObject.play_sound(yay)
-            free = False
- 
-        break
- 
-
-        
-
-
-
 #================ CHOOSE GAME ====================
-
 def choose_game():
-    button_list = [0, 1, 0, 0, 0, 1, 0]
-    light_proc(button_list)
     choice_bkg = make_surface(gpath + 'game_choice.jpg')
     global curr_game
     bakgnd = ScreenObject((0,0))
@@ -647,34 +473,46 @@ def choose_game():
         greet = TextObject(item, (x, y), 60, white)
         TextObject.font_process(greet)
         y = y + 70
-    place_arrows('1and5')
     pygame.display.flip()
 
-    light_proc(button_list)
-    game_to_play = btn_proc(button_list)
+    # Wait for mouse click to select game
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if x < 800:
+                    game_to_play = 1
+                elif x > 1200:
+                    game_to_play = 5
+                else:
+                    game_to_play = 3
+                break
+        else:
+            continue
+        break
     name = game_names[game_to_play]
-    type = game_types[name]
-    # make the game object and call it curr_game
-    # the goal is to generalize the commands below to just two picture and text
-    if type == 'picture':
+    type_ = game_types[name]
+    if type_ == 'picture':
         background = make_surface(gpath + name + '_bkg.jpg')
         curr_game = PictGame( name, background, get_file(name + '_picture.csv', 2)[0], [0,0])
-    if type == 'text':
+    elif type_ == 'text':
         background = make_surface(gpath + name + '_bkg.jpg')
         curr_game = TextGame( name, background, get_file(name + '_qna.csv', 4)[0], [0,0])
-    if game_to_play == 3:
-        curr_game = TextGame( name, g2_bkg, get_file('another_text.csv', 4)[0], [0,0])
-    curr_game.free = free # True for free False for donation this is an add on
+    elif game_to_play == 3:
+        background = make_surface(gpath + name + '_bkg.jpg')
+        curr_game = TextGame( name, background, get_file('another_text.csv', 4)[0], [0,0])
     pinball = SoundObject('pinball-start.mp3', .3)
     SoundObject.play_sound(pinball)
     sleep(2.5)
-    return curr_game  
+    return curr_game
 # ^^^^^^^^^^^^^^^^^^^^ CHOOSE GAME ^^^^^^^^^^^^^^^^^^^
 
 #==================== TEXT GAME =====================
 def text_game():
     button_list = [0, 1, 0, 1, 0, 1, 0]
-    light_proc(button_list)
     wrong_sound = SoundObject('Downer.mp3', .2)
     right_sound = SoundObject('Quick-win.mp3', .3)
     # get 5 (number of turns)
@@ -718,13 +556,12 @@ def text_game():
                 TextObject.font_process(answer)
                 ay_offset += 70
             ax_offset += 640
-        place_arrows('135')
         
         pygame.display.flip()
 
         # go and get the button pressed and convert it to an index
         btn_dict = {1:1, 3:2, 5:3}
-        resp = btn_dict[btn_proc(button_list)]
+        resp = btn_dict[btn_proc(None)]
         # need to highlight correct in green
         
         r_indx = display_list.index(turn_ans[0]) #gives index of right ans
@@ -773,7 +610,6 @@ def picture_game():
     right_sound = SoundObject('Quick-win.mp3', .3)
     picture_intro(curr_game)
     button_list = [0, 1, 1, 1, 1, 1, 0]
-    light_proc(button_list)
     # get 5 indexes for our turns
     turn_picks = sample(range( 0, len(curr_game.all_picts)), 5)
     for q in range(0,5):
@@ -807,10 +643,9 @@ def picture_game():
             x += 380
             blit_index.append(x)
 
-        place_arrows('12345')
         pygame.display.flip()
         #resp = key_press(button_list)
-        resp = btn_proc(button_list)
+        resp = btn_proc(None)
         # correct answer highlited green nomatter what
         glo_offset = 20
         c_index = shuffle_answers.index(answer_picture)
@@ -847,11 +682,9 @@ def picture_game():
         
 # ^^^^^^^^^^^^^^^  PICTURE GAME ^^^^^^^^^^^^^^^^^^       
 
+
 #================= FINAL SCORE ===================
 def final_score(score):
-    button_list = [0, 0, 0, 0, 0, 0, 0]
-    light_proc(button_list)
-
     # play game final sound
     f_score_sounds = ['0_right.wav','1_right.wav','2_right.mp3','3_right.wav',
                        '4_right.mp3', '5_right.wav']
@@ -872,55 +705,8 @@ def final_score(score):
     TextObject.font_process(msg)
     pygame.display.flip()
     sleep(4)
-
-    # process winners
-    global small_index
-    global big_index
-    if score[0] > 3 and not free:
-        if small_index == len(small_prize) - 1:
-            small_index = 0
-            small_word = small_prize[small_index]
-        else:
-            small_index += 1
-            small_word = small_prize[small_index]
-        
-        if big_index == len(big_prize) - 1:
-            big_index = 0
-            big_word = big_prize[big_index]
-        else:
-            big_index += 1
-            big_word = big_prize[big_index]
-
-        if score[0] == 5:
-            win_word = big_word
-        else:
-            win_word = small_word
-        
-        msg_y = 700
-        message = TextObject('You are a WINNER!!',(image_centerx, msg_y),75,red )
-        TextObject.font_process(message)
-        msg_y += 100
-        message = TextObject('Please see one of our Staff for your prize', (image_centerx, msg_y),75,red)
-        TextObject.font_process(message)
-        msg_y += 100
-        message = TextObject('Tell them your winner code is '+ '"'+ win_word+ '"', (image_centerx, msg_y),75,red)
-        TextObject.font_process(message)
-        pygame.display.flip()
-        fanfare = SoundObject('fanfare.mp3', .5)   
-        SoundObject.play_sound(fanfare)
-        sleep(5)
-
-
-           
-    elif score[0] < 4 and not free:
-        msg_y = 700
-        message = TextObject('Sorry you did not win this time',(image_centerx, msg_y),75,blue )
-        TextObject.font_process(message)
-        pygame.display.flip()
-        sleep(2)
-
-    
 #^^^^^^^^^^^^^^^^^ FINAL SCORE ^^^^^^^^^^^^^^^^^^^
+
 
 
 # GAME LOOP -------
@@ -928,25 +714,19 @@ def final_score(score):
 @timeout_decorator.timeout(MASTER_TIMEOUT,use_signals=True)
 def game_loop():
     global curr_game
-    
-    # free_cash and curr_game calls include background images
-    free_cash()
     # game must be created first
-    
     curr_game = choose_game()
     if use_db:
         # make an entry in the game field -1 score means game isn't finished
         now = datetime.now()
         date_time = now.strftime("%m/%d/%Y,%H,%M,%S")
         db_module.db_start()
-        game_data = (curr_game.name, date_time, -1, free)
+        game_data = (curr_game.name, date_time, -1, None)
         this_game = db_module.game_write(game_data)
         db_module.db_close
-    
     if type(curr_game).__name__ == 'PictGame':
         picture_game()
         type(curr_game).__name__
-        
     else:
         text_game()
     # we have gone and played the game so we can now finish
@@ -956,9 +736,7 @@ def game_loop():
         db_module.db_start()
         db_module.game_over(db_score)
         db_module.db_close
-
-
-    final_score(curr_game.score)       
+    final_score(curr_game.score)
 
 #\\\\\\\\\\\\\\\\\\\\\\ END METHODS \\\\\\\\\\\\\\\\\\\\\\\\
 
