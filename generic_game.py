@@ -106,18 +106,28 @@ class PictGame():
 
     
 # !!!!!!!!!!!!!
+
+# --- Utility to scale positions ---
+def scale_pos(pos):
+    return (int(pos[0] * scale_x), int(pos[1] * scale_y))
+
 class ScreenObject():
     def __init__(self, location):
         self.location = location
     def blit_scr_obj(self, location, image):
-        display.blit(image, location)
+        display.blit(image, scale_pos(location))
+
 
 class GraphicObject(ScreenObject):
     def __init__(self, location, file_name):
         self.file_name = file_name
         super().__init__(location)
-    # load into pygame 
-        self.surface = pygame.image.load(file_name).convert_alpha()
+        # load and scale image
+        img = pygame.image.load(file_name).convert_alpha()
+        w = int(img.get_width() * scale_x)
+        h = int(img.get_height() * scale_y)
+        self.surface = pygame.transform.smoothscale(img, (w, h))
+
 
 class TextObject(ScreenObject):
     def __init__(self, text, location, size, color, width=None, font='FreeSans'):
@@ -130,39 +140,27 @@ class TextObject(ScreenObject):
 
     def parse_string(self):    
         # this handy util breaks up long lines for us
-
         lines_list = textwrap.wrap(self.text, self.width)        
-    # will return any number of lines of final_length
         return lines_list 
-    #----------- font process
+
     def font_process(self):
         global display
-        x = self.location[0]
-        y = self.location[1]
-        # attempt to combine all font operations into one call that
-        # renders and blits the text
+        x, y = scale_pos(self.location)
+        # scale font size
+        scaled_size = int(self.size * ((scale_x + scale_y) / 2))
         black = (0,0,0)
-        d_shadow = 3
-        # create a font object from a system font
-        font = pygame.font.SysFont(self.font, self.size, True, False)
-        # render font on a new surface font.render(text, antialias, bkgnd = none)
+        d_shadow = int(3 * ((scale_x + scale_y) / 2))
+        font = pygame.font.SysFont(self.font, scaled_size, True, False)
         render_message = font.render(self.text, True, self.color)
-        # render drop shadow in black
         if d_shadow:
             render_ds = font.render(self.text, True, black)
             render_ds_rect = render_message.get_rect()
-        # attempt to center works
-        # create a rectangular object for the text surface object
         render_msg_rect = render_message.get_rect()
-        # center in x, use y from call
-        render_msg_rect.center = self.location # (x,y) x = screen center
-        # blit drop shadow then text to image
+        render_msg_rect.center = (x, y)
         if d_shadow:
-            #render_ds_rect.center = (image_centerx + d_shadow, y + d_shadow)
             render_ds_rect.center = (x + d_shadow, y + d_shadow)
             display.blit(render_ds, render_ds_rect)
         display.blit(render_message, render_msg_rect)
-        # no flip here up to the caller
         
 class SoundObject():
     def __init__(self, file, volume):
@@ -175,22 +173,38 @@ class SoundObject():
 # \\\\\\\\\\\\\\\\\\\\ END CLASSES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 # /////////////// INITIALIZE RUN ONCE ////////////////////////////
+
 def init():
-    # set up the ports port#, input T/F, state T/F (optional)
+    # --- Screen scaling setup ---
+    global DESIGN_WIDTH, DESIGN_HEIGHT, scale_x, scale_y
+    DESIGN_WIDTH = 1920
+    DESIGN_HEIGHT = 1080
+
+    pygame.init()
+    pygame.mixer.init()
+    pygame.mixer.music.set_volume(1.0)
+    os.environ['SDL_VIDEO_CENTERED'] = '1'
+    clock = pygame.time.Clock()
+    info = pygame.display.Info()
+    screen_width = info.current_w
+    screen_height = info.current_h
+    scale_x = screen_width / DESIGN_WIDTH
+    scale_y = screen_height / DESIGN_HEIGHT
+    global display
+    display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    pygame.mouse.set_visible(1)
+
+    # Center points in design coordinates
     global image_centerx
     global image_centery
-    image_centerx = 960
-    image_centery = 540
+    image_centerx = DESIGN_WIDTH // 2
+    image_centery = DESIGN_HEIGHT // 2
     global small_index
     small_index = 0
     global big_index
     big_index = 0
-    # button(in port, in stat, out port, out stat)
 
-
-
-
-    # make some arrow objects
+    # make some arrow objects (design coordinates)
     global arrow1
     arrow1 = ScreenObject((15, 890))
     global arrow2
@@ -201,22 +215,6 @@ def init():
     arrow4 = ScreenObject((1337, 890))
     global arrow5
     arrow5 = ScreenObject((1775, 890))
-
-    # ======== pygame setup ===========
-    pygame.init()
-    pygame.mixer.init()
-    pygame.mixer.music.set_volume(1.0)
-    os.environ['SDL_VIDEO_CENTERED'] = '1'
-    clock = pygame.time.Clock()
-    screen_width = 1920
-    screen_height = 1080
-    bgColor = (0,0,0)
-    size = (screen_width, screen_height)
-    global display
-    #display = pygame.display.set_mode((1920,1080))
-    display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-    pygame.mouse.set_visible(0)
-    # ^^^^^^^^^^^^ end pygame setup ^^^^^^^^^^^
 
 
 
@@ -270,8 +268,9 @@ def get_file(list_file, col_count):
 
 
 
+
 def btn_proc(_):
-    # Use mouse input for all user interactions
+    # Use mouse input for all user interactions, scaling mouse positions
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -279,6 +278,9 @@ def btn_proc(_):
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
+                # Scale mouse position to design coordinates
+                x = x / scale_x
+                y = y / scale_y
                 # For game selection: left (1), right (5), center (3)
                 if y > 350 and y < 900:
                     if x < 800:
@@ -288,44 +290,6 @@ def btn_proc(_):
                     else:
                         return 3  # center (if used)
                 # For answer selection: 3 or 5 answers horizontally
-                if y > 500 and y < 800:
-                    if x < 500:
-                        return 1
-                    elif x < 1100:
-                        return 2
-                    elif x < 1700:
-                        return 3
-                    elif x < 2300:
-                        return 4
-                    else:
-                        return 5
- 
-                
-            
-
-
-
-
-
-    # Wait for mouse click and return the selected index based on click position
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                # Map x/y to a button index based on UI layout
-                # For game selection: left (1), right (5)
-                if y > 350 and y < 900:
-                    if x < 800:
-                        return 1  # left
-                    elif x > 1200:
-                        return 5  # right
-                    else:
-                        return 3  # center (if used)
-                # For answer selection: 3 or 5 answers horizontally
-                # (500 < y < 800 for answers)
                 if y > 500 and y < 800:
                     if x < 500:
                         return 1
