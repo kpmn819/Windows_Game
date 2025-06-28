@@ -10,7 +10,7 @@ from random import randrange, shuffle, random, sample
 # pull stuff from config file
 
 from config import white, black, green, red, blue
-from config import game_names, game_types, nt_path, lists_path
+from config import game_names, game_types
 import db_module
 use_db = True
 from datetime import datetime
@@ -21,7 +21,7 @@ from datetime import datetime
 from time import sleep, time
 import sys, pygame, os
 import multiprocessing
-#import timeout_decorator
+
 
 
 from pygame.locals import *
@@ -35,11 +35,13 @@ import csv
 import textwrap
 ''' this decorater wraps the major functions and methods
 to allow resetting the game if they walk away'''
-import timeout_decorator
-times_out = 30
-MASTER_TIMEOUT = 300
 
-# /////////////////  VARIABLES AND CONSTANTS ///////////////////////////
+
+
+# --------- Make all paths relative to script location ---------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+gpath = os.path.join(BASE_DIR, 'graphics') + os.sep
+lists_path = BASE_DIR + os.sep
 
 # \\\\\\\\\\\\\\\\\ END VARIABLES AND CONSTANTS \\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -92,9 +94,8 @@ class PictGame():
             temp_surface = []
             temp.append(self.qu_ans[count][0])
             temp.append(self.qu_ans[count][1])
-            temp_surface.append(pygame.image.load('/home/pi/Dol_class/graphics/'+ self.qu_ans[count][0]).convert_alpha())
-            temp_surface.append(pygame.image.load('/home/pi/Dol_class/graphics/'+ self.qu_ans[count][1]).convert_alpha())
-                
+            temp_surface.append(pygame.image.load(os.path.join(gpath, self.qu_ans[count][0])).convert_alpha())
+            temp_surface.append(pygame.image.load(os.path.join(gpath, self.qu_ans[count][1])).convert_alpha())
             count += 1
             self.all_picts.append(temp_surface)
             all_files.append(temp)
@@ -217,11 +218,7 @@ def init():
     pygame.mouse.set_visible(0)
     # ^^^^^^^^^^^^ end pygame setup ^^^^^^^^^^^
 
-    global gpath
-    if os.name == 'nt':
-        gpath = nt_path
-    else:
-        gpath = pi_path
+
 
     # arrows
     b_arro = gpath + 'blue_arrow.png'
@@ -710,8 +707,6 @@ def final_score(score):
 
 
 # GAME LOOP -------
-#@timeout_decorator.timeout(times_out, use_signals=True)
-@timeout_decorator.timeout(MASTER_TIMEOUT,use_signals=True)
 def game_loop():
     global curr_game
     # game must be created first
@@ -757,10 +752,7 @@ def main():
             else:
                 print('previus game deleted')
                 del curr_game
-            try:
-                game_loop()
-            except timeout_decorator.TimeoutError:
-                continue
+            game_loop()
 
         
     except KeyboardInterrupt:
