@@ -26,10 +26,10 @@ web_server = '/home/pi/game_web/game/manage.py runserver'
 some_file = file_path + 'somefile'
 # used by choose_game to set up questions, answers and backgrounds
 # dictionary button#: name
-game_names = {1:'dolphin', 5:'bonehenge', 3:'stupid'}
+game_names = {1:'dolphin', 5:'bonehenge'}
 # dict. of the game types these names will also be used to load files
 # like dolphin_intro.csv, dolphin_picture.csv
-game_types = {'dolphin':'picture', 'bonehenge':'text','stupid':'text'}
+game_types = {'dolphin':'picture', 'bonehenge':'text'}
 # award words for 5 right or 4 right
 small_prize = ('Bottlenose', 'Dwarf', 'Porpoise', 'Pyygmy', 'Spotted')
 big_prize  = ('Blue', 'Fin', 'Humpback', 'Minke', 'Right')
