@@ -192,9 +192,9 @@ def init():
     scale_y = screen_height / DESIGN_HEIGHT
     global display
     # for developement uncomment the line below
-    display = pygame.display.set_mode((1920,1080))
+    #display = pygame.display.set_mode((1920,1080))
     # for autostart to work properly uncomment the line below
-    #display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(1)
 
     # Center points in design coordinates
@@ -279,6 +279,11 @@ def btn_proc(_):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                # Ctrl+Q or ESC to quit for debugging
+                if (event.key == pygame.K_q and (event.mod & pygame.KMOD_CTRL)) or event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 # Scale mouse position to design coordinates
@@ -361,8 +366,12 @@ def score_process(curr_game, right):
         pygame.display.flip()
         sleep(3)
     
-def make_surface(file):
+def make_surface(file, scale_to_screen=False):
     surface = pygame.image.load(file).convert_alpha()
+    if scale_to_screen:
+        # Scale to current display size
+        w, h = display.get_size()
+        surface = pygame.transform.smoothscale(surface, (w, h))
     return surface
 
 def blit_formatted(file):
@@ -394,7 +403,7 @@ def blit_formatted(file):
 
 #================ CHOOSE GAME ====================
 def choose_game():
-    choice_bkg = make_surface(gpath + 'game_choice.jpg')
+    choice_bkg = make_surface(gpath + 'game_choice.jpg', scale_to_screen=True)
     global curr_game
     bakgnd = ScreenObject((0,0))
     ScreenObject.blit_scr_obj(bakgnd, bakgnd.location, choice_bkg)
@@ -460,13 +469,13 @@ def choose_game():
     name = game_names[game_to_play]
     type_ = game_types[name]
     if type_ == 'picture':
-        background = make_surface(gpath + name + '_bkg.jpg')
+        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
         curr_game = PictGame( name, background, get_file(name + '_picture.csv', 2)[0], [0,0])
     elif type_ == 'text':
-        background = make_surface(gpath + name + '_bkg.jpg')
+        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
         curr_game = TextGame( name, background, get_file(name + '_qna.csv', 4)[0], [0,0])
     elif game_to_play == 3:
-        background = make_surface(gpath + name + '_bkg.jpg')
+        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
         curr_game = TextGame( name, background, get_file('another_text.csv', 4)[0], [0,0])
     pinball = SoundObject('pinball-start.mp3', .3)
     SoundObject.play_sound(pinball)
@@ -657,7 +666,7 @@ def final_score(score):
     SoundObject.play_sound(final_sound)
 
     # put up background and text
-    final_bkg = make_surface(gpath + 'finalscore.jpg')
+    final_bkg = make_surface(gpath + 'finalscore.jpg', scale_to_screen=True)
     bkg = ScreenObject([0,0])
     ScreenObject.blit_scr_obj(bkg, [0,0], final_bkg)
     msg_y = 400
