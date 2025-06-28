@@ -191,7 +191,10 @@ def init():
     scale_x = screen_width / DESIGN_WIDTH
     scale_y = screen_height / DESIGN_HEIGHT
     global display
-    display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    # for developement uncomment the line below
+    display = pygame.display.set_mode((1920,1080))
+    # for autostart to work properly uncomment the line below
+    #display = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(1)
 
     # Center points in design coordinates
