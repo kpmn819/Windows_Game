@@ -628,10 +628,16 @@ def picture_game():
         #resp = key_press(button_list)
         resp = btn_proc(None)
         # correct answer highlited green nomatter what
-        glo_offset = 20
+        # Dynamically scale and position the glow to match the answer image
+        glo_offset = int(img_w * 0.05)  # 5% of image width as offset
+        glow_w = int(img_w * 1.1)  # Glow slightly larger than image
+        glow_h = int(new_h * 1.1)
+        scaled_green_glow = pygame.transform.smoothscale(green_glow, (glow_w, glow_h))
+        scaled_red_glow = pygame.transform.smoothscale(red_glow, (glow_w, glow_h))
         c_index = shuffle_answers.index(answer_picture)
-        c_glow = ScreenObject([blit_index[c_index]- glo_offset, ay-glo_offset])
-        ScreenObject.blit_scr_obj(c_glow, c_glow.location, green_glow)
+        glow_x = blit_index[c_index] - int((glow_w - img_w) / 2)
+        glow_y = ay - int((glow_h - new_h) / 2)
+        display.blit(scaled_green_glow, (glow_x, glow_y))
         pygame.display.flip()
 
         if answer_picture == shuffle_answers[int(resp -1)]:
@@ -643,8 +649,9 @@ def picture_game():
             resp_ans = False
             SoundObject.play_sound(wrong_sound)
             c_index = resp - 1
-            c_glow = ScreenObject([blit_index[c_index]- glo_offset, ay-glo_offset])
-            ScreenObject.blit_scr_obj(c_glow, c_glow.location, red_glow)
+            glow_x = blit_index[c_index] - int((glow_w - img_w) / 2)
+            glow_y = ay - int((glow_h - new_h) / 2)
+            display.blit(scaled_red_glow, (glow_x, glow_y))
             sleep(.01)
             pygame.display.flip()
         if use_db:
