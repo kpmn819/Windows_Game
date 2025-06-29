@@ -410,17 +410,18 @@ def choose_game():
     greeting = 'Please select a game to play'
     greet = TextObject(greeting, (image_centerx, 100), 80, white)
     TextObject.font_process(greet)
-    # first the left side
+    # Only two choices: dolphin (left), bonehenge (right)
+    # Left side: dolphin
     x = 430
     y = 400
-    name = game_names[1]
-    file = name + '_dscr.csv'
-    dscr = get_file(file, 1)
-    greeting = dscr[0][0][0]
+    name_left = 'dolphin'
+    file_left = name_left + '_dscr.csv'
+    dscr_left = get_file(file_left, 1)
+    greeting = dscr_left[0][0][0]
     greet = TextObject(greeting, (x, y), 70, white)
     TextObject.font_process(greet)
     y = y + 90
-    greeting = dscr[0][1][0]
+    greeting = dscr_left[0][1][0]
     greet = TextObject(greeting, (image_centerx, 300), 80, white, 30)
     parsed_lines = TextObject.parse_string(greet)
     for item in parsed_lines:
@@ -428,18 +429,17 @@ def choose_game():
         TextObject.font_process(greet)
         y = y + 70
 
-    # now the right side
+    # Right side: bonehenge
     x = 1430
     y = 400
-
-    name = game_names[5]
-    file = name + '_dscr.csv'
-    dscr = get_file(file, 1)
-    greeting = dscr[0][0][0]
+    name_right = 'bonehenge'
+    file_right = name_right + '_dscr.csv'
+    dscr_right = get_file(file_right, 1)
+    greeting = dscr_right[0][0][0]
     greet = TextObject(greeting, (x, y), 80, white)
     TextObject.font_process(greet)
     y = y + 90
-    greeting = dscr[0][1][0]
+    greeting = dscr_right[0][1][0]
     greet = TextObject(greeting, (x, y), 80, white, 30)
     parsed_lines = TextObject.parse_string(greet)
     for item in parsed_lines:
@@ -449,6 +449,7 @@ def choose_game():
     pygame.display.flip()
 
     # Wait for mouse click to select game
+    screen_w = display.get_width()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -456,17 +457,16 @@ def choose_game():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                if x < 800:
-                    game_to_play = 1
-                elif x > 1200:
-                    game_to_play = 5
+                if x < screen_w // 2:
+                    # Left half: dolphin
+                    name = 'dolphin'
                 else:
-                    game_to_play = 3
+                    # Right half: bonehenge
+                    name = 'bonehenge'
                 break
         else:
             continue
         break
-    name = game_names[game_to_play]
     type_ = game_types[name]
     if type_ == 'picture':
         background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
@@ -474,9 +474,6 @@ def choose_game():
     elif type_ == 'text':
         background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
         curr_game = TextGame( name, background, get_file(name + '_qna.csv', 4)[0], [0,0])
-    elif game_to_play == 3:
-        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
-        curr_game = TextGame( name, background, get_file('another_text.csv', 4)[0], [0,0])
     pinball = SoundObject('pinball-start.mp3', .3)
     SoundObject.play_sound(pinball)
     sleep(2.5)
