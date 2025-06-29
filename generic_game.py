@@ -188,6 +188,7 @@ def init():
     info = pygame.display.Info()
     screen_width = info.current_w
     screen_height = info.current_h
+    print(f"Detected screen size: width={screen_width}, height={screen_height}")
     scale_x = screen_width / DESIGN_WIDTH
     scale_y = screen_height / DESIGN_HEIGHT
     global display
