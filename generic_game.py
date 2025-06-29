@@ -604,14 +604,24 @@ def picture_game():
         display.blit(gray_glow, (770, 2))
         display.blit(question_picture, (810, 40))
 
+        # Dynamically space answer images across the screen width
         blit_index = []
-        x = 50
-        blit_index.append(x)
-        # put answers on screen
-        ay = 600
-        for i in range(0,5):
-            display.blit(shuffle_answers[i], (x,ay)) 
-            x += 380
+        screen_w = display.get_width()
+        num_answers = 5
+        margin = int(0.05 * screen_w)  # 5% margin on each side
+        available_w = screen_w - 2 * margin
+        img_w = int(available_w / num_answers * 0.9)  # leave some space between
+        spacing = int(available_w / num_answers)
+        ay = int(display.get_height() * 0.55)  # 55% down the screen
+        for i in range(num_answers):
+            x = margin + i * spacing
+            # scale image to fit img_w (keep aspect ratio)
+            img = shuffle_answers[i]
+            orig_w, orig_h = img.get_width(), img.get_height()
+            scale_factor = img_w / orig_w
+            new_h = int(orig_h * scale_factor)
+            scaled_img = pygame.transform.smoothscale(img, (img_w, new_h))
+            display.blit(scaled_img, (x, ay))
             blit_index.append(x)
 
         pygame.display.flip()
