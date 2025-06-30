@@ -625,8 +625,28 @@ def picture_game():
             blit_index.append(x)
 
         pygame.display.flip()
-        #resp = key_press(button_list)
-        resp = btn_proc(None)
+        # Wait for mouse click and determine which image was clicked
+        selected = None
+        while selected is None:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if (event.key == pygame.K_q and (event.mod & pygame.KMOD_CTRL)) or event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = event.pos
+                    # Check if click is within any answer image
+                    for i in range(num_answers):
+                        x = blit_index[i]
+                        if mx >= x and mx <= x + img_w and my >= ay and my <= ay + new_h:
+                            selected = i + 1  # 1-based index for compatibility
+                            break
+            if selected is not None:
+                break
+        resp = selected
         # correct answer highlited green nomatter what
         # Dynamically scale and position the glow to match the answer image
         glo_offset = int(img_w * 0.05)  # 5% of image width as offset
