@@ -601,8 +601,28 @@ def picture_game():
         ScreenObject.blit_scr_obj(curr_game,[0,0], curr_game.background)
         #shuffle_answer order
         shuffle(shuffle_answers)
-        display.blit(gray_glow, (770, 2))
-        display.blit(question_picture, (810, 40))
+        # Remove the old static gray glow blit (was misaligned)
+        # display.blit(gray_glow, (770, 2))
+        # Center the challenge (question) picture at the top of the screen
+        qpic_orig_w, qpic_orig_h = question_picture.get_width(), question_picture.get_height()
+        # Scale the question picture to fit a reasonable width (e.g., 25% of screen width)
+        screen_w = display.get_width()
+        screen_h = display.get_height()
+        qpic_target_w = int(screen_w * 0.25)
+        qpic_scale = qpic_target_w / qpic_orig_w
+        qpic_target_h = int(qpic_orig_h * qpic_scale)
+        scaled_qpic = pygame.transform.smoothscale(question_picture, (qpic_target_w, qpic_target_h))
+        qpic_x = (screen_w - qpic_target_w) // 2
+        qpic_y = int(screen_h * 0.04)  # 4% from the top
+        # Draw a glow behind the challenge picture, scaled and centered
+        glow_margin = int(qpic_target_w * 0.08)  # 8% margin for glow
+        glow_w = qpic_target_w + 2 * glow_margin
+        glow_h = qpic_target_h + 2 * glow_margin
+        scaled_gray_glow = pygame.transform.smoothscale(gray_glow, (glow_w, glow_h))
+        glow_x = qpic_x - glow_margin
+        glow_y = qpic_y - glow_margin
+        display.blit(scaled_gray_glow, (glow_x, glow_y))
+        display.blit(scaled_qpic, (qpic_x, qpic_y))
 
         # Dynamically space answer images across the screen width
         blit_index = []
