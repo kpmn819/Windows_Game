@@ -12,7 +12,7 @@ from random import randrange, shuffle, random, sample
 from config import white, black, green, red, blue
 from config import game_names, game_types
 import db_module
-use_db = True
+use_db = False
 from datetime import datetime
 
 
