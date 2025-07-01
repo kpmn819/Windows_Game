@@ -33,8 +33,7 @@ import os
 import csv
 # code to break up long strings
 import textwrap
-''' this decorater wraps the major functions and methods
-to allow resetting the game if they walk away'''
+## IMPORTS END ----------------------------------------------------
 
 
 
