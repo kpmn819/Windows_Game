@@ -38,7 +38,12 @@ import textwrap
 
 
 # --------- Make all paths relative to script location ---------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+import sys
+# Set BASE_DIR for both development and PyInstaller bundle
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 gpath = os.path.join(BASE_DIR, 'graphics') + os.sep
 lists_path = BASE_DIR + os.sep
 
