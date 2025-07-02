@@ -7,3 +7,4 @@ __pycache__/db_module.cpython-38.pyc
 game_db.db
 game_db.db
 >>>>>>> 7c3979fb16e9a97628b4ad3b88b92da2a78a744f
+build/
