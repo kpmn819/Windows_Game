@@ -151,6 +151,10 @@ class CSVEditor(tk.Tk):
             messagebox.showinfo("Edit Row", "Select a row to edit.")
             return
         idx = self.tree.index(selected[0])
+        # Prevent editing the header row (which is not shown in the table, so idx=0 is first data row)
+        if idx == 0 and not self.rows:
+            messagebox.showinfo("Edit Row", "No data rows to edit.")
+            return
         current = self.rows[idx]
 
         def on_submit():
@@ -185,6 +189,10 @@ class CSVEditor(tk.Tk):
             messagebox.showinfo("Delete Row", "Select a row to delete.")
             return
         idx = self.tree.index(selected[0])
+        # Prevent deleting the header row (which is not shown in the table, so idx=0 is first data row)
+        if idx == 0 and not self.rows:
+            messagebox.showinfo("Delete Row", "No data rows to delete.")
+            return
         del self.rows[idx]
         self.refresh_table()
 
