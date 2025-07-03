@@ -51,58 +51,22 @@ class CSVEditor(tk.Tk):
         self.tree.tag_configure('evenrow', background='#ffffff')
         self.tree.pack(expand=True, fill='both')
 
-        # Bind double-click for in-place cell editing
-        self.tree.bind('<Double-1>', self.on_cell_double_click)
+        # In-place double-click editing removed for stability
 
         # Buttons (create only once, after table)
         if not hasattr(self, '_buttons_created'):
             self.btn_frame = ttk.Frame(self)
             self.btn_frame.pack(fill='x')
-            ttk.Button(self.btn_frame, text="Add Row", command=self.add_row).pack(side='left')
-            ttk.Button(self.btn_frame, text="Edit Row", command=self.edit_row).pack(side='left')
-            ttk.Button(self.btn_frame, text="Delete Row", command=self.delete_row).pack(side='left')
-            ttk.Button(self.btn_frame, text="Save", command=self.save_csv).pack(side='right')
+            self.add_btn = ttk.Button(self.btn_frame, text="Add Row", command=self.add_row)
+            self.add_btn.pack(side='left')
+            self.edit_btn = ttk.Button(self.btn_frame, text="Edit Row", command=self.edit_row)
+            self.edit_btn.pack(side='left')
+            self.delete_btn = ttk.Button(self.btn_frame, text="Delete Row", command=self.delete_row)
+            self.delete_btn.pack(side='left')
+            self.save_btn = ttk.Button(self.btn_frame, text="Save", command=self.save_csv)
+            self.save_btn.pack(side='right')
             self._buttons_created = True
 
-    def on_cell_double_click(self, event):
-        # Identify the row and column
-        region = self.tree.identify('region', event.x, event.y)
-        if region != 'cell':
-            return
-        row_id = self.tree.identify_row(event.y)
-        col_id = self.tree.identify_column(event.x)
-        if not row_id or not col_id:
-            return
-        row_idx = self.tree.index(row_id)
-        col_idx = int(col_id.replace('#', ''))
-        # Get current value
-        current_value = self.rows[row_idx][col_idx] if row_idx < len(self.rows) and col_idx < len(self.rows[row_idx]) else ''
-        # Get cell bbox
-        x, y, width, height = self.tree.bbox(row_id, col_id)
-        # Create entry widget
-        entry = tk.Entry(self.tree)
-        entry.place(x=x, y=y, width=width, height=height)
-        entry.insert(0, current_value)
-        entry.focus()
-
-        def save_edit(event=None):
-            new_value = entry.get().replace(',', '').replace('\n', ' ').replace('\r', ' ').strip()
-            self.rows[row_idx][col_idx] = new_value
-            self.refresh_table()
-            entry.destroy()
-
-        entry.bind('<Return>', save_edit)
-        entry.bind('<FocusOut>', lambda e: entry.destroy())
-
-        # Buttons
-        btn_frame = ttk.Frame(self)
-        btn_frame.pack(fill='x')
-        ttk.Button(btn_frame, text="Add Row", command=self.add_row).pack(side='left')
-        ttk.Button(btn_frame, text="Edit Row", command=self.edit_row).pack(side='left')
-        ttk.Button(btn_frame, text="Delete Row", command=self.delete_row).pack(side='left')
-        ttk.Button(btn_frame, text="Save", command=self.save_csv).pack(side='right')
-
-        self.load_csv(self.file_var.get())
 
     def load_csv(self, filename):
         # Get absolute path for the selected file
