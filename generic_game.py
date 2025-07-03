@@ -289,6 +289,18 @@ def btn_proc(_):
                 if (event.key == pygame.K_q and (event.mod & pygame.KMOD_CTRL)) or event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+                # Ctrl+E to launch CSV editor
+                if (event.key == pygame.K_e and (event.mod & pygame.KMOD_CTRL)):
+                    # Minimize pygame window, run edit_csv.py, then exit main program
+                    pygame.display.iconify()
+                    import subprocess
+                    import sys as _sys
+                    import os as _os
+                    python_exe = _sys.executable
+                    editor_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'edit_csv.py')
+                    subprocess.Popen([python_exe, editor_path])
+                    pygame.quit()
+                    sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 # Scale mouse position to design coordinates
