@@ -79,8 +79,8 @@ class CSVEditor(tk.Tk):
                 # Remove blank/empty rows
                 reader = [row for row in reader if any(cell.strip() for cell in row)]
                 if reader:
-                    self.headers = [f"Column {i+1}" for i in range(len(reader[0]))]
-                    self.rows = reader
+                    self.headers = [cell.strip() if cell.strip() else f"Column {i+1}" for i, cell in enumerate(reader[0])]
+                    self.rows = reader[1:]  # Exclude header row from data
                 else:
                     self.headers = ["Column 1"]
         else:
@@ -98,12 +98,31 @@ class CSVEditor(tk.Tk):
             self.tree.insert('', 'end', values=row, tags=(tag,))
 
     def add_row(self):
-        # Add a blank row and immediately open the first cell for editing
-        row = ["" for _ in range(len(self.headers))]
-        self.rows.append(row)
-        self.refresh_table()
-        # Open the first cell for editing after the UI updates
-        self.after(50, self.edit_new_row_and_save)
+        # Show a dialog with one entry per column, using header names from the CSV file
+        def on_submit():
+            values = []
+            for entry in entries:
+                val = entry.get().replace(',', '').replace('\n', ' ').replace('\r', ' ').strip()
+                values.append(val)
+            if any(values):
+                while len(values) < len(self.headers):
+                    values.append("")
+                self.rows.append(values)
+                self.refresh_table()
+            dialog.destroy()
+
+        dialog = tk.Toplevel(self)
+        dialog.title("Add Row")
+        entries = []
+        for i, header in enumerate(self.headers):
+            tk.Label(dialog, text=header).grid(row=i, column=0, padx=5, pady=5)
+            entry = tk.Entry(dialog)
+            entry.grid(row=i, column=1, padx=5, pady=5)
+            entries.append(entry)
+        submit_btn = tk.Button(dialog, text="Add", command=on_submit)
+        submit_btn.grid(row=len(self.headers), column=0, columnspan=2, pady=10)
+        dialog.grab_set()
+        entries[0].focus_set()
 
     def edit_new_row_and_save(self):
         children = self.tree.get_children()
@@ -133,14 +152,32 @@ class CSVEditor(tk.Tk):
             return
         idx = self.tree.index(selected[0])
         current = self.rows[idx]
-        values = simpledialog.askstring("Edit Row", f"Edit values separated by commas:", initialvalue=",".join(current))
-        if values is not None:
-            # Remove commas and newlines from each cell
-            row = [cell.replace(',', '').replace('\n', ' ').replace('\r', ' ').strip() for cell in values.split(',')]
-            while len(row) < len(self.headers):
-                row.append("")
-            self.rows[idx] = row
-            self.refresh_table()
+
+        def on_submit():
+            values = []
+            for i, entry in enumerate(entries):
+                val = entry.get().replace(',', '').replace('\n', ' ').replace('\r', ' ').strip()
+                values.append(val)
+            if any(values):
+                while len(values) < len(self.headers):
+                    values.append("")
+                self.rows[idx] = values
+                self.refresh_table()
+            dialog.destroy()
+
+        dialog = tk.Toplevel(self)
+        dialog.title("Edit Row")
+        entries = []
+        for i, header in enumerate(self.headers):
+            tk.Label(dialog, text=header).grid(row=i, column=0, padx=5, pady=5)
+            entry = tk.Entry(dialog)
+            entry.insert(0, current[i] if i < len(current) else "")
+            entry.grid(row=i, column=1, padx=5, pady=5)
+            entries.append(entry)
+        submit_btn = tk.Button(dialog, text="Save", command=on_submit)
+        submit_btn.grid(row=len(self.headers), column=0, columnspan=2, pady=10)
+        dialog.grab_set()
+        entries[0].focus_set()
 
     def delete_row(self):
         selected = self.tree.selection()
@@ -156,6 +193,8 @@ class CSVEditor(tk.Tk):
         clean_rows = [row for row in self.rows if any(cell.strip() for cell in row)]
         with open(self.filename, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
+            # Write header row first
+            writer.writerow(self.headers)
             writer.writerows(clean_rows)
         messagebox.showinfo("Save", "File saved.")
 
