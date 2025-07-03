@@ -2,6 +2,14 @@ import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox, filedialog
 import csv
 import os
+import sys
+
+
+# Determine base directory for resource files (works for PyInstaller and dev)
+if hasattr(sys, '_MEIPASS'):
+    BASE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CSV_FILES = [
     "bonehenge_dscr.csv",
@@ -54,10 +62,12 @@ class CSVEditor(tk.Tk):
         self.load_csv(self.file_var.get())
 
     def load_csv(self, filename):
-        self.filename = filename
+        # Get absolute path for the selected file
+        abs_path = os.path.join(BASE_DIR, filename)
+        self.filename = abs_path
         self.rows = []
-        if os.path.exists(filename):
-            with open(filename, newline='', encoding='utf-8') as f:
+        if os.path.exists(abs_path):
+            with open(abs_path, newline='', encoding='utf-8') as f:
                 reader = list(csv.reader(f))
                 if reader:
                     self.headers = [f"Column {i+1}" for i in range(len(reader[0]))]
@@ -114,6 +124,7 @@ class CSVEditor(tk.Tk):
         self.refresh_table()
 
     def save_csv(self):
+        # Save to the same absolute path as loaded
         with open(self.filename, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerows(self.rows)
