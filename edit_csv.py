@@ -14,11 +14,14 @@ else:
 CSV_FILES = [
     "bonehenge_dscr.csv",
     "bonehenge_qna.csv",
+    "text_qna.csv",
     "right_resp.csv",
     "wrong_resp.csv",
     "dolphin_dscr.csv",
     "dolphin_intro.csv",
-    "dolphin_picture.csv"
+    "dolphin_picture.csv",
+    "picture_picture.csv"
+
 ]
 
 class CSVEditor(tk.Tk):
