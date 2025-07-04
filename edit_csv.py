@@ -22,6 +22,7 @@ CSV_FILES = [
 ]
 
 class CSVEditor(tk.Tk):
+    # Initialize the main CSV editor window and set up state variables
     def __init__(self):
         super().__init__()
         self.title("CSV Editor")
@@ -31,6 +32,7 @@ class CSVEditor(tk.Tk):
         self.headers = []
         self.create_widgets()
 
+    # Create all widgets: file selector, table, and control buttons
     def create_widgets(self):
         # File selection
         self.file_var = tk.StringVar(value=CSV_FILES[0])
@@ -54,7 +56,6 @@ class CSVEditor(tk.Tk):
         self.tree.tag_configure('evenrow', background='#ffffff')
         self.tree.pack(expand=True, fill='both')
 
-        # In-place double-click editing removed for stability
 
         # Buttons (create only once, after table)
         if not hasattr(self, '_buttons_created'):
@@ -71,6 +72,7 @@ class CSVEditor(tk.Tk):
             self._buttons_created = True
 
 
+    # Load the selected CSV file, extract headers, and populate rows
     def load_csv(self, filename):
         # Get absolute path for the selected file
         abs_path = os.path.join(BASE_DIR, filename)
@@ -90,6 +92,7 @@ class CSVEditor(tk.Tk):
             self.headers = ["Column 1"]
         self.refresh_table()
 
+    # Refresh the table display with current headers and rows
     def refresh_table(self):
         self.tree.delete(*self.tree.get_children())
         self.tree["columns"] = list(range(len(self.headers)))
@@ -100,6 +103,7 @@ class CSVEditor(tk.Tk):
             tag = 'evenrow' if idx % 2 == 0 else 'oddrow'
             self.tree.insert('', 'end', values=row, tags=(tag,))
 
+    # Open a dialog to add a new row, with one entry per column
     def add_row(self):
         # Show a dialog with one entry per column, using header names from the CSV file
         def on_submit():
@@ -129,6 +133,7 @@ class CSVEditor(tk.Tk):
         dialog.grab_set()
         entries[0].focus_set()
 
+    # (Legacy) Open an entry widget for the first cell of a new row (not used in dialog-based editing)
     def edit_new_row_and_save(self):
         children = self.tree.get_children()
         if not children:
@@ -150,6 +155,7 @@ class CSVEditor(tk.Tk):
             entry.bind('<Return>', save_edit)
             entry.bind('<FocusOut>', lambda e: entry.destroy())
 
+    # Open a dialog to edit the selected row, with one entry per column
     def edit_row(self):
         selected = self.tree.selection()
         if not selected:
@@ -190,6 +196,7 @@ class CSVEditor(tk.Tk):
         dialog.grab_set()
         entries[0].focus_set()
 
+    # Delete the selected row from the table (not the header)
     def delete_row(self):
         selected = self.tree.selection()
         if not selected:
@@ -203,6 +210,7 @@ class CSVEditor(tk.Tk):
         del self.rows[idx]
         self.refresh_table()
 
+    # Save the current table (including header) to the CSV file, omitting blank rows
     def save_csv(self):
         # Remove blank/empty rows before saving
         clean_rows = [row for row in self.rows if any(cell.strip() for cell in row)]
