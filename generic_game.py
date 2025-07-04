@@ -486,10 +486,10 @@ def choose_game():
         break
     type_ = game_types[name]
     if type_ == 'picture':
-        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
+        background = make_surface(gpath + type_ + '_bkg.jpg', scale_to_screen=True)
         curr_game = PictGame( name, background, get_file(name + '_picture.csv', 2)[0], [0,0])
     elif type_ == 'text':
-        background = make_surface(gpath + name + '_bkg.jpg', scale_to_screen=True)
+        background = make_surface(gpath + type_ + '_bkg.jpg', scale_to_screen=True)
         curr_game = TextGame( name, background, get_file(name + '_qna.csv', 4)[0], [0,0])
     pinball = SoundObject('pinball-start.mp3', .3)
     SoundObject.play_sound(pinball)
