@@ -15,7 +15,10 @@ CSV_FILES = [
     "bonehenge_dscr.csv",
     "bonehenge_qna.csv",
     "right_resp.csv",
-    "wrong_resp.csv"
+    "wrong_resp.csv",
+    "dolphin_dscr.csv",
+    "dolphin_intro.csv",
+    "dolphin_picture.csv"
 ]
 
 class CSVEditor(tk.Tk):
@@ -113,10 +116,12 @@ class CSVEditor(tk.Tk):
 
         dialog = tk.Toplevel(self)
         dialog.title("Add Row")
+        # Make dialog taller to ensure the save/add button is visible
+        dialog.geometry("500x{}".format(80 * max(1, len(self.headers))))
         entries = []
         for i, header in enumerate(self.headers):
             tk.Label(dialog, text=header).grid(row=i, column=0, padx=5, pady=5)
-            entry = tk.Entry(dialog)
+            entry = tk.Entry(dialog, width=60)
             entry.grid(row=i, column=1, padx=5, pady=5)
             entries.append(entry)
         submit_btn = tk.Button(dialog, text="Add", command=on_submit)
@@ -171,10 +176,12 @@ class CSVEditor(tk.Tk):
 
         dialog = tk.Toplevel(self)
         dialog.title("Edit Row")
+        # Make dialog taller to ensure the save/add button is visible
+        dialog.geometry("500x{}".format(80 * max(1, len(self.headers))))
         entries = []
         for i, header in enumerate(self.headers):
             tk.Label(dialog, text=header).grid(row=i, column=0, padx=5, pady=5)
-            entry = tk.Entry(dialog)
+            entry = tk.Entry(dialog, width=60)
             entry.insert(0, current[i] if i < len(current) else "")
             entry.grid(row=i, column=1, padx=5, pady=5)
             entries.append(entry)
