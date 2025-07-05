@@ -13,13 +13,11 @@ else:
 
 CSV_FILES = [
     "text_dscr.csv",
+    "text_qna.csv",
     "picture_intro.csv",
     "picture_dscr.csv",
-    "text_qna.csv",
     "right_resp.csv",
     "wrong_resp.csv",
-    "picture_dscr.csv",
-    "dolphin_intro.csv",
     "picture_picture.csv"
 
 ]
