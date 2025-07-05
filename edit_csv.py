@@ -12,14 +12,14 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CSV_FILES = [
-    "bonehenge_dscr.csv",
-    "bonehenge_qna.csv",
+    "text_dscr.csv",
+    "picture_intro.csv",
+    "picture_dscr.csv",
     "text_qna.csv",
     "right_resp.csv",
     "wrong_resp.csv",
-    "dolphin_dscr.csv",
+    "picture_dscr.csv",
     "dolphin_intro.csv",
-    "dolphin_picture.csv",
     "picture_picture.csv"
 
 ]

@@ -346,7 +346,8 @@ def picture_intro(curr_game):
 
     # put up the game intro
     # splice the name of the game to _intro.csv to load file
-    intro = get_file(curr_game.name + '_intro.csv', 1)[0]
+    # this is hardcoded because picture is the only game with an intro
+    intro = get_file("picture" + '_intro.csv', 1)[0]
     bkg = ScreenObject([0,0])
     ScreenObject.blit_scr_obj(bkg, bkg.location, curr_game.background)
     text_y = 400
@@ -431,7 +432,7 @@ def choose_game():
     # Left side: dolphin
     x = 430
     y = 400
-    name_left = 'dolphin'
+    name_left = 'picture'
     file_left = name_left + '_dscr.csv'
     dscr_left = get_file(file_left, 1)
     greeting = dscr_left[0][0][0]
@@ -449,7 +450,7 @@ def choose_game():
     # Right side: bonehenge
     x = 1430
     y = 400
-    name_right = 'bonehenge'
+    name_right = 'text'
     file_right = name_right + '_dscr.csv'
     dscr_right = get_file(file_right, 1)
     greeting = dscr_right[0][0][0]
