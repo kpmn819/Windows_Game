@@ -17,9 +17,8 @@ CSV_FILES = [
     "picture_intro.csv",
     "picture_dscr.csv",
     "right_resp.csv",
-    "wrong_resp.csv",
+    "wrong_ro.csv",
     "picture_picture.csv"
-
 ]
 
 class CSVEditor(tk.Tk):
