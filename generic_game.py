@@ -1,7 +1,8 @@
 #! /bin/sh
 
 
-
+#There are several references to Dolphin and Bonehenge, these are legacy names for the picture and text games.
+# it wasn't worhtwhile to change them in the code.
 # IMPORTS START --------------------------------------------------
 # makes extensive use of pygame to blit the screen
 
